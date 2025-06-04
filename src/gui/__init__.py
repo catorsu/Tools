@@ -1,3 +1,3 @@
-"""
-GUI modules for the Crawler Toolbox
-"""
+from .launcher import ToolboxLauncher
+
+__all__ = ['ToolboxLauncher']
