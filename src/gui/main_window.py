@@ -8,6 +8,7 @@ import threading
 import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
 import pyperclip  # For clipboard functionality
+import tkinter as tk  # Add this import
 from ..crawler.sublink_crawler import SublinkCrawler
 
 ctk.set_appearance_mode("dark")
@@ -28,6 +29,49 @@ class MainWindow:
         self.crawl_thread = None
 
         self.setup_ui()
+
+    def _create_context_menu(self, widget: ctk.CTkTextbox) -> tk.Menu:
+        menu = tk.Menu(widget, tearoff=0)
+
+        def copy_command():
+            try:
+                if widget.tag_ranges("sel"):
+                    selected_text = widget.get("sel.first", "sel.last")
+                    pyperclip.copy(selected_text)
+                else:
+                    all_text = widget.get("1.0", "end-1c")
+                    pyperclip.copy(all_text)
+            except pyperclip.PyperclipException as e:
+                messagebox.showerror("Clipboard Error", f"Failed to copy: {e}")
+            except tk.TclError:
+                all_text = widget.get("1.0", "end-1c")
+                pyperclip.copy(all_text)
+
+        def paste_command():
+            try:
+                clipboard_content = pyperclip.paste()
+                if widget.tag_ranges("sel"):
+                    widget.delete("sel.first", "sel.last")
+                widget.insert(tk.INSERT, clipboard_content)
+            except pyperclip.PyperclipException as e:
+                messagebox.showerror("Clipboard Error", f"Failed to paste: {e}")
+            except tk.TclError:
+                messagebox.showerror("Paste Error", "Failed to paste: Tkinter error.")
+
+        def select_all_command():
+            widget.tag_add("sel", "1.0", "end")
+            widget.mark_set(tk.INSERT, "1.0")
+
+        menu.add_command(label="Copy", command=copy_command)
+        menu.add_command(label="Paste", command=paste_command)
+        menu.add_command(label="Select All", command=select_all_command)
+        return menu
+
+    def _popup_context_menu(self, event, menu: tk.Menu):
+        try:
+            menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            menu.grab_release()
 
     def setup_ui(self):
         """Set up the user interface"""
@@ -141,6 +185,14 @@ class MainWindow:
 
         self.progress_text = ctk.CTkTextbox(progress_frame, height=100)
         self.progress_text.pack(fill="x", padx=10, pady=(0, 10))
+        # Bind context menu to progress_text
+        self.progress_text_context_menu = self._create_context_menu(self.progress_text)
+        self.progress_text.bind(
+            "<Button-3>",
+            lambda event: self._popup_context_menu(
+                event, self.progress_text_context_menu
+            ),
+        )
 
         # Results section
         results_frame = ctk.CTkFrame(main_frame)
@@ -167,6 +219,16 @@ class MainWindow:
             results_frame, font=ctk.CTkFont(family="Courier", size=11)
         )
         self.results_textbox.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        # Bind context menu to results_textbox
+        self.results_textbox_context_menu = self._create_context_menu(
+            self.results_textbox
+        )
+        self.results_textbox.bind(
+            "<Button-3>",
+            lambda event: self._popup_context_menu(
+                event, self.results_textbox_context_menu
+            ),
+        )
 
     def validate_inputs(self):
         """Validate user inputs"""
@@ -302,15 +364,11 @@ class MainWindow:
     def copy_links_to_clipboard(self):
         """Copy all found links to clipboard in formatted style"""
         if not self.found_links:
-            messagebox.showwarning("Warning", "No links to copy")
             return
 
         try:
             formatted_text = self._get_formatted_links_text()
             pyperclip.copy(formatted_text)
-            messagebox.showinfo(
-                "Success", f"Copied {len(self.found_links)} links to clipboard!"
-            )
         except Exception as e:
             messagebox.showerror("Error", f"Failed to copy to clipboard: {str(e)}")
 
@@ -330,7 +388,6 @@ class MainWindow:
     def export_results(self):
         """Export results to file in formatted style"""
         if not self.found_links:
-            messagebox.showwarning("Warning", "No links to export")
             return
 
         filename = filedialog.asksaveasfilename(
@@ -346,7 +403,6 @@ class MainWindow:
                     f.write(f"# Sublinks found by Crawler Toolbox\n")
                     f.write(f"# Generated on: {self._get_timestamp()}\n\n")
                     f.write(formatted_text)
-                messagebox.showinfo("Success", f"Links exported to {filename}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to export links: {str(e)}")
 
@@ -373,6 +429,7 @@ class MainWindow:
         """Show error UI (must run on main thread)"""
         self.progress_text.insert("end", f"ERROR: {message}\n")
         self.progress_text.see("end")
+        messagebox.showerror("Error", message)
 
     def run(self):
         """Start the application"""

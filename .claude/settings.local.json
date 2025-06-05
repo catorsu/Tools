@@ -7,7 +7,13 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(rm:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(poetry init:*)",
+      "Bash(poetry add:*)",
+      "Bash(poetry run:*)",
+      "Bash(echo:*)",
+      "Bash(sudo apt-get:*)",
+      "Bash(sudo apt-get install:*)"
     ],
     "deny": []
   }
