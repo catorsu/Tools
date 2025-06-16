@@ -1,4 +1,3 @@
-# File: /home/cator/project/Tools/main.py
 """
 Main entry point for the Tools application
 """
@@ -16,6 +15,8 @@ from src.gui import ToolboxLauncher
 from src.tools.crawler import CrawlerTool
 from src.tools.mdblock import MarkdownBlockTool
 from src.tools.git_diff import GitDiffTool
+from src.tools.reddit_reducer import RedditReducerTool
+from src.tools.file_content_extractor import FileContentExtractorTool
 
 # from src.tools.tag_content_extractor import TagContentExtractorTool # Removed
 # from src.tools.tag_renamer import TagRenamerTool # Removed
@@ -37,6 +38,8 @@ def main():
         launcher.add_tool(MarkdownBlockTool)
         launcher.add_tool(GitDiffTool)
         launcher.add_tool(TagToolsMainTool)  # Register the new consolidated tool
+        launcher.add_tool(RedditReducerTool)
+        launcher.add_tool(FileContentExtractorTool)
 
         # Run application
         launcher.run()

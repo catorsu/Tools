@@ -255,7 +255,6 @@ class TagContentExtractorSubFrame(ctk.CTkFrame):  # Changed inheritance
             if extracted_contents:
                 output_str = ""
                 for i, content in enumerate(extracted_contents):
-                    output_str += f"--- Match {i+1} for <{selected_tag}> ---\n"
                     output_str += content.strip()
                     output_str += "\n\n"
                 self.output_text.insert("end", output_str.strip())

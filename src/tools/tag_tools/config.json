@@ -1,7 +1,14 @@
 {
     "custom_tags": [
+        "BugFixSolution",
         "ModuleRefactoringSolution",
+        "TaskPlan",
+        "bug_description",
         "file_contents",
-        "initial_code_base"
+        "initial_code_base",
+        "plan",
+        "refactoring_plan",
+        "user_instructions",
+        "user_requirements"
     ]
 }
